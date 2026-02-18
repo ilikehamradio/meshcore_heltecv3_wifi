@@ -8,6 +8,12 @@ Your Wi-Fi credentials and LoRa region are baked into the firmware at build time
 
 ---
 
+## Disclaimer
+
+This script is provided **as-is, with no warranty of any kind**. By using it you accept full responsibility for whatever happens to your device, your network, or anything else. Flashing custom firmware carries inherent risk — you can brick your device, void your warranty, or cause other unintended consequences. I am not responsible for any damage, data loss, bricked hardware, or any other outcome resulting from the use of this script. If you don't know what you're doing, proceed with caution or don't proceed at all.
+
+---
+
 ## Requirements
 
 - Linux (Debian/Ubuntu, Fedora/RHEL, CentOS, or Arch)
