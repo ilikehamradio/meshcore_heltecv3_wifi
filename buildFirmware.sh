@@ -139,29 +139,29 @@ fi
 
 echo
 echo "Select your LoRa region:"
-echo "  1) US915  — USA, Canada, Mexico           (915.0 MHz)"
-echo "  2) EU868  — Europe                        (869.525 MHz)"
-echo "  3) AU915  — Australia, New Zealand        (915.0 MHz)"
-echo "  4) AS923  — Asia (Japan, SE Asia, etc.)   (923.0 MHz)"
-echo "  5) IN865  — India                         (865.0 MHz)"
-echo "  6) KR920  — South Korea                   (920.9 MHz)"
-echo "  7) RU868  — Russia                        (868.9 MHz)"
+echo "  1) USA / Canada                (910.525 MHz)"
+echo "  2) USA / Canada (alternate 1)  (907.875 MHz)"
+echo "  3) USA / Canada (alternate 2)  (927.875 MHz)"
+echo "  4) Europe / UK                 (869.525 MHz)"
+echo "  5) Europe (alternate)          (868.731 MHz)"
+echo "  6) Australia / New Zealand     (915.8 MHz)"
+echo "  7) New Zealand (alternate)     (917.375 MHz)"
 echo
 read -rp "Region [1-7, default: 1]: " REGION_CHOICE
 case "${REGION_CHOICE:-1}" in
-    1) LORA_FREQ="915.0";   REGION_NAME="US915" ;;
-    2) LORA_FREQ="869.525"; REGION_NAME="EU868" ;;
-    3) LORA_FREQ="915.0";   REGION_NAME="AU915" ;;
-    4) LORA_FREQ="923.0";   REGION_NAME="AS923" ;;
-    5) LORA_FREQ="865.0";   REGION_NAME="IN865" ;;
-    6) LORA_FREQ="920.9";   REGION_NAME="KR920" ;;
-    7) LORA_FREQ="868.9";   REGION_NAME="RU868" ;;
+    1) LORA_FREQ="910.525";     LORA_BW="250"; LORA_SF="11"; REGION_NAME="USA/Canada" ;;
+    2) LORA_FREQ="907.875";     LORA_BW="250"; LORA_SF="11"; REGION_NAME="USA/Canada (alt 1)" ;;
+    3) LORA_FREQ="927.875";     LORA_BW="250"; LORA_SF="11"; REGION_NAME="USA/Canada (alt 2)" ;;
+    4) LORA_FREQ="869.525";     LORA_BW="250"; LORA_SF="11"; REGION_NAME="Europe/UK" ;;
+    5) LORA_FREQ="868.731018";  LORA_BW="250"; LORA_SF="11"; REGION_NAME="Europe (alt)" ;;
+    6) LORA_FREQ="915.8";       LORA_BW="250"; LORA_SF="11"; REGION_NAME="Australia/NZ" ;;
+    7) LORA_FREQ="917.375";     LORA_BW="250"; LORA_SF="11"; REGION_NAME="New Zealand (alt)" ;;
     *)
         echo -e "${RED}Invalid selection.${NC}"
         exit 1
         ;;
 esac
-echo "  Region: $REGION_NAME ($LORA_FREQ MHz)"
+echo "  Region: $REGION_NAME ($LORA_FREQ MHz, BW=${LORA_BW} kHz, SF=${LORA_SF})"
 
 echo
 read -rp "Enter WiFi SSID: " WIFI_SSID
@@ -204,14 +204,18 @@ with open(path, "w") as f:
     f.write(content)
 PYEOF
 
-echo -e "${YELLOW}Setting LoRa region: ${REGION_NAME} (${LORA_FREQ} MHz)...${NC}"
-LORA_FREQ="$LORA_FREQ" python3 - "platformio.ini" <<'PYEOF'
+echo -e "${YELLOW}Setting LoRa region: ${REGION_NAME} (${LORA_FREQ} MHz, BW=${LORA_BW} kHz, SF=${LORA_SF})...${NC}"
+LORA_FREQ="$LORA_FREQ" LORA_BW="$LORA_BW" LORA_SF="$LORA_SF" python3 - "platformio.ini" <<'PYEOF'
 import os, sys, re
 path = sys.argv[1]
 freq = os.environ["LORA_FREQ"]
+bw   = os.environ["LORA_BW"]
+sf   = os.environ["LORA_SF"]
 with open(path, "r") as f:
     content = f.read()
 content = re.sub(r'-D LORA_FREQ=[\d.]+', f'-D LORA_FREQ={freq}', content)
+content = re.sub(r'-D LORA_BW=[\d.]+',   f'-D LORA_BW={bw}',     content)
+content = re.sub(r'-D LORA_SF=[\d.]+',   f'-D LORA_SF={sf}',     content)
 with open(path, "w") as f:
     f.write(content)
 PYEOF

@@ -45,15 +45,17 @@ The finished `firmware-merged.bin` is written to the directory you ran the scrip
 
 ## LoRa Regions
 
-| # | Region | Frequency | Countries |
-|---|--------|-----------|-----------|
-| 1 | US915  | 915.0 MHz | USA, Canada, Mexico *(default)* |
-| 2 | EU868  | 869.525 MHz | Europe |
-| 3 | AU915  | 915.0 MHz | Australia, New Zealand |
-| 4 | AS923  | 923.0 MHz | Japan, SE Asia |
-| 5 | IN865  | 865.0 MHz | India |
-| 6 | KR920  | 920.9 MHz | South Korea |
-| 7 | RU868  | 868.9 MHz | Russia |
+| # | Region | Frequency |
+|---|--------|-----------|
+| 1 | USA / Canada *(default)* | 910.525 MHz |
+| 2 | USA / Canada (alternate 1) | 907.875 MHz |
+| 3 | USA / Canada (alternate 2) | 927.875 MHz |
+| 4 | Europe / UK | 869.525 MHz |
+| 5 | Europe (alternate) | 868.731 MHz |
+| 6 | Australia / New Zealand | 915.8 MHz |
+| 7 | New Zealand (alternate) | 917.375 MHz |
+
+> If you're unsure which to pick, go with option 1 for North America or option 4 for Europe and check with your local MeshCore network to confirm.
 
 ---
 
