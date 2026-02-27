@@ -31,10 +31,13 @@ chmod +x buildFirmware.sh
 ./buildFirmware.sh
 ```
 
+**Options:**
+- `--commit COMMIT` or `-c COMMIT` — Build from a specific MeshCore commit (e.g. `e738a74`). If omitted, uses the latest commit from the repo.
+
 The script is interactive. It will prompt you for:
 
 1. **LoRa region** — select the frequency band for your country
-2. **Wi-Fi SSID and password** — embedded into the firmware at compile time
+2. **Wi-Fi SSID and password** — embedded into the firmware at compile time (password input is masked with asterisks)
 3. **Confirmation** before the build starts
 4. **Flash** — optionally flash directly to a connected device
 5. **Full chip erase** — optionally wipe the device before flashing
@@ -63,7 +66,7 @@ The finished `firmware-merged.bin` is written to the directory you ran the scrip
 
 1. Installs missing system dependencies via the distro's package manager
 2. Installs PlatformIO if not already present
-3. Clones MeshCore (`e738a74`) to a temp directory under `/tmp`
+3. Clones MeshCore (latest commit by default, or the one specified with `--commit`) to a temp directory under `/tmp`
 4. Patches `platformio.ini` with your Wi-Fi credentials and selected LoRa frequency
 5. Builds the firmware with PlatformIO
 6. Merges `bootloader.bin`, `partitions.bin`, `boot_app0.bin`, and `firmware.bin` into a single `firmware-merged.bin` using esptool
@@ -96,6 +99,6 @@ If the device doesn't respond, hold **BOOT** and press **RESET** to enter bootlo
 
 ---
 
-## Pinned MeshCore Commit
+## MeshCore Version
 
-The script builds from commit `e738a74` (MeshCore v1.12.0). To target a different commit, edit `MESHCORE_COMMIT` at the top of `buildFirmware.sh`.
+By default the script builds from the latest commit on the MeshCore repo. To pin a specific commit (e.g. for reproducibility), use `--commit e738a74` or `-c e738a74`.

@@ -3,7 +3,7 @@ set -euo pipefail
 
 ENV_NAME="Heltec_v3_companion_radio_wifi"
 MESHCORE_REPO="https://github.com/ripplebiz/MeshCore.git"
-MESHCORE_COMMIT="e738a74"
+MESHCORE_COMMIT=""
 BUILD_DIR="/tmp/meshcore_build_$$"
 ORIGINAL_PWD="$PWD"
 
@@ -12,6 +12,25 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --commit|--c)
+            if [[ -z "${2:-}" ]]; then
+                echo "Error: --commit requires a value"
+                echo "Usage: $0 [--commit|--c COMMIT]"
+                exit 1
+            fi
+            MESHCORE_COMMIT="$2"
+            shift 2
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Usage: $0 [--commit|--c COMMIT]"
+            exit 1
+            ;;
+    esac
+done
 
 echo -e "${BLUE}==== MeshCore WiFi Firmware Builder ====${NC}"
 echo
@@ -165,7 +184,21 @@ echo "  Region: $REGION_NAME ($LORA_FREQ MHz, BW=${LORA_BW} kHz, SF=${LORA_SF})"
 
 echo
 read -rp "Enter WiFi SSID: " WIFI_SSID
-read -rsp "Enter WiFi Password: " WIFI_PWD
+printf "Enter WiFi Password: "
+WIFI_PWD=""
+while IFS= read -r -n 1 -s char; do
+    if [[ -z "$char" ]]; then
+        break
+    elif [[ "$char" == $'\x7f' || "$char" == $'\b' ]]; then
+        if [[ -n "$WIFI_PWD" ]]; then
+            WIFI_PWD="${WIFI_PWD:0:-1}"
+            printf '\b \b'
+        fi
+    else
+        WIFI_PWD+="$char"
+        printf '*'
+    fi
+done
 echo
 
 echo "  SSID:   $WIFI_SSID"
@@ -177,6 +210,15 @@ if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
 fi
 
 echo
+if [ -z "$MESHCORE_COMMIT" ]; then
+    echo -e "${YELLOW}Fetching latest MeshCore commit...${NC}"
+    MESHCORE_COMMIT=$(git ls-remote "$MESHCORE_REPO" refs/heads/main | cut -f1)
+    echo "  Using latest: $MESHCORE_COMMIT"
+else
+    echo "  Using commit: $MESHCORE_COMMIT"
+fi
+echo
+
 echo -e "${YELLOW}Cloning MeshCore repository to ${BUILD_DIR}...${NC}"
 mkdir -p "$BUILD_DIR"
 git clone "$MESHCORE_REPO" "$BUILD_DIR/MeshCore"
