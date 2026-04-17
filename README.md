@@ -16,11 +16,11 @@ This script is provided **as-is, with no warranty of any kind**. By using it you
 
 ## Requirements
 
-- Linux (Debian/Ubuntu, Fedora/RHEL, CentOS, or Arch)
-- `sudo` access (for installing packages)
-- Internet connection (to clone MeshCore and install tools)
+- Linux (any distro)
+- [Docker](https://docs.docker.com/get-docker/) installed and running
+- Internet connection (to pull the base image, clone MeshCore, and download PlatformIO toolchains)
 
-All other dependencies (PlatformIO, esptool, etc.) are installed automatically.
+That's it. Everything else — Python, PlatformIO, esptool, build tools — runs inside Docker and is cleaned up automatically when the build finishes.
 
 ---
 
@@ -64,21 +64,23 @@ The finished `firmware-merged.bin` is written to the directory you ran the scrip
 
 ## What the Script Does
 
-1. Installs missing system dependencies via the distro's package manager
-2. Installs PlatformIO if not already present
-3. Clones MeshCore (latest commit by default, or the one specified with `--commit`) to a temp directory under `/tmp`
-4. Patches `platformio.ini` with your Wi-Fi credentials and selected LoRa frequency
-5. Builds the firmware with PlatformIO
-6. Merges `bootloader.bin`, `partitions.bin`, `boot_app0.bin`, and `firmware.bin` into a single `firmware-merged.bin` using esptool
-7. Copies the merged binary to your working directory
-8. Optionally flashes the device over serial
-9. Cleans up all temp files
+1. Checks that Docker is installed and the daemon is running
+2. Prompts for region, Wi-Fi credentials, and optional commit hash
+3. Builds a `python:3.12-slim`-based Docker image containing Python, git, PlatformIO, and esptool
+4. Runs a container that:
+   - Clones MeshCore (latest or pinned commit)
+   - Patches `platformio.ini` with your Wi-Fi credentials and LoRa frequency
+   - Compiles the firmware with PlatformIO
+   - Merges `bootloader.bin`, `partitions.bin`, `boot_app0.bin`, and `firmware.bin` into a single `firmware-merged.bin` via esptool
+   - Writes the merged binary to your working directory via a bind mount
+5. Optionally flashes the device by passing the serial port into a second container with `--device`
+6. Removes the Docker image and all temp files on exit (containers are auto-removed with `--rm`)
 
 ---
 
 ## Flashing Later
 
-If you skipped flashing during the build, you can flash manually any time:
+If you skipped flashing during the build, you can flash manually any time with esptool:
 
 ```bash
 esptool --chip esp32s3 --port /dev/ttyUSB0 --baud 921600 write_flash 0x0 firmware-merged.bin
@@ -88,14 +90,17 @@ If the device doesn't respond, hold **BOOT** and press **RESET** to enter bootlo
 
 ---
 
-## Supported Distros
+## Docker Permissions
 
-| Distro | Package Manager |
-|--------|----------------|
-| Debian / Ubuntu | apt |
-| Fedora / RHEL | dnf |
-| CentOS / RHEL (older) | yum |
-| Arch Linux | pacman |
+If you get a "permission denied" error when the script tries to contact the Docker daemon, either:
+
+```bash
+# start the daemon (if it isn't running)
+sudo systemctl start docker
+
+# or add yourself to the docker group (requires logout/login)
+sudo usermod -aG docker $USER
+```
 
 ---
 
